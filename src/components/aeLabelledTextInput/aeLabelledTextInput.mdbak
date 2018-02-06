@@ -25,7 +25,7 @@ new Vue({
   methods: {
       onClearRequest: function() {
           this.inputValue = ''
-          console.log('ae-validated-text-input / cleared value')
+          console.log('ae-input-validation / cleared value')
       },
       onInput: function(value){
         this.inputValue = value

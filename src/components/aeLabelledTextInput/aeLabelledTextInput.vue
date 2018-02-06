@@ -17,7 +17,7 @@
         {{_validMessage}}
       </span>
     </div>
-    <ae-validated-text-input
+    <ae-input-validation
       :inputId="internalInputId"
       :validateOnBlur="validateOnBlur"
       :validateOnInput="validateOnInput"

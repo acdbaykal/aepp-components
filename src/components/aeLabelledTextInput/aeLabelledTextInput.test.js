@@ -1,9 +1,9 @@
 import {shallow, mount} from 'vue-test-utils'
 import AeTextInputMolecule from './aeLabelledTextInput.vue'
 import AeTextInputMoleculePlugin from './index'
-import AeValidatedTextInput from '../aeValidatedTextInput/aeValidatedTextInput.vue'
+import AeValidatedTextInput from '../aeInputValidation/aeInputValidation.vue'
 
-describe('AeTextInputMolecule', () => {
+describe('AeLabelledTextInput', () => {
   const createShallowWrapper = (data = {}) => {
     return shallow(AeTextInputMolecule, {
       propsData: data,
@@ -30,7 +30,7 @@ describe('AeTextInputMolecule', () => {
       ).toBe(label)
     })
 
-    it('forwards placeholder prop onto ae-validated-text-input element', () => {
+    it('forwards placeholder prop onto ae-input-validation element', () => {
       const placeholder = 'plchldr'
       const wrapper = createShallowWrapper({placeholder})
       const input = wrapper.find(AeValidatedTextInput)

@@ -1,4 +1,4 @@
-import AeValidatedTextInput from '../aeValidatedTextInput/aeValidatedTextInput.vue'
+import AeValidatedTextInput from '../aeInputValidation/aeInputValidation.vue'
 
 export default {
   name: 'ae-labelled-text-input',
