@@ -1,72 +1,101 @@
-import {shallow, mount} from 'vue-test-utils'
-import AeTextInputMolecule from './aeLabelledTextInput.vue'
-import AeTextInputMoleculePlugin from './index'
-import AeValidatedTextInput from '../aeInputValidation/aeInputValidation.vue'
+import {shallow, mount, createLocalVue} from 'vue-test-utils'
+import AeLabelledTextInput from './aeLabelledTextInput.vue'
+import AeLabelledTextInputPlugin from './index'
+import AeLabel from '../aeLabel/aeLabel.vue'
 
 describe('AeLabelledTextInput', () => {
+  const localVue = createLocalVue()
+  const SlotInner = localVue.component('slot-inner')
+  localVue.component('slot-component', {
+    name: 'slot-component',
+    functional: true,
+    render (h, context) {
+      console.log(context)
+      return h(
+        'div', {
+          attrs: {
+            'data-selector': !!this.validateOnInput
+          },
+          props: {
+            validateOnInput: undefined
+          }
+        }
+      )
+    }
+  })
+
   const createShallowWrapper = (data = {}) => {
-    return shallow(AeTextInputMolecule, {
+    return shallow(AeLabelledTextInput, {
       propsData: data,
-      attachToDocument: true
+      slots: {
+        default: '<slot-component></slot-component>'
+      },
+      localVue
     })
   }
 
   const createWrapper = (data = {}) => {
-    return mount(AeTextInputMolecule, {
+    return mount(AeLabelledTextInput, {
       propsData: data
     })
   }
   it('has an install function', () => {
-    expect(AeTextInputMoleculePlugin).toBeInstanceOf(Function)
+    expect(AeLabelledTextInputPlugin).toBeInstanceOf(Function)
   })
 
   describe('basic rendering', () => {
-    it('renders a label element containing the label property value', () => {
+    it('renders a AeLabel component and inserts the label property as the default slot of the label', () => {
       const label = 'lskfjls'
       const wrapper = createShallowWrapper({label})
-      const labelWrapper = wrapper.find('label')
-      expect(
-        labelWrapper.text()
-      ).toBe(label)
+      const labelWrapper = wrapper.find(AeLabel)
+      expect(labelWrapper).toBeTruthy()
+      expect(labelWrapper.vm.$slots.default[0].text).toBe(label)
     })
 
-    it('forwards placeholder prop onto ae-input-validation element', () => {
-      const placeholder = 'plchldr'
-      const wrapper = createShallowWrapper({placeholder})
-      const input = wrapper.find(AeValidatedTextInput)
-      expect(input.vm.$props.placeholder).toBe(placeholder)
-    })
-
-    it('does NOT render a label element when label is not provided', () => {
+    it('renders what ever has been inserted as the default slot', () => {
       const wrapper = createShallowWrapper()
-      expect(wrapper.contains('label')).toBe(false)
+      const slotComponent = wrapper.find('[data-slot-component]')
+      expect(slotComponent.is('div')).toBe(true)
     })
 
-    it('renders a AeValidatedTextInput', () => {
-      const wrapper = createShallowWrapper()
-      expect(wrapper.contains(AeValidatedTextInput)).toBe(true)
-    })
+    // it('forwards placeholder prop onto ae-input-validation element', () => {
+    //   const placeholder = 'plchldr'
+    //   const wrapper = createShallowWrapper({placeholder})
+    //   const input = wrapper.find(AeValidatedTextInput)
+    //   expect(input.vm.$props.placeholder).toBe(placeholder)
+    // })
 
-    it('assigns input a radom id and assigns refers to it in the label\'s for attribute', () => {
-      const wrapper = createShallowWrapper({label: 'ada'})
-      const label = wrapper.find('label')
-      const input = wrapper.find(AeValidatedTextInput)
-      const forValue = label.element.getAttribute('for')
-      const id = input.vm.$props.inputId
-      expect(forValue).toBe(id + '')
-    })
+    // it('does NOT render a label element when label is not provided', () => {
+    //   const wrapper = createShallowWrapper()
+    //   expect(wrapper.contains('label')).toBe(false)
+    // })
 
-    it('forwards validateOnInput property to input', () => {
-      const validateOnInput = 'aedfada'
+    // it('renders a AeValidatedTextInput', () => {
+    //   const wrapper = createShallowWrapper()
+    //   expect(wrapper.contains(AeValidatedTextInput)).toBe(true)
+    // })
+
+    // it('assigns input a radom id and assigns refers to it in the label\'s for attribute', () => {
+    //   const wrapper = createShallowWrapper({label: 'ada'})
+    //   const label = wrapper.find('label')
+    //   const input = wrapper.find(AeValidatedTextInput)
+    //   const forValue = label.element.getAttribute('for')
+    //   const id = input.vm.$props.inputId
+    //   expect(forValue).toBe(id + '')
+    // })
+
+    it.only('forwards validateOnInput property to first default slot element', () => {
+      const validateOnInput = () => undefined
       const wrapper = createShallowWrapper({validateOnInput})
-      const input = wrapper.find(AeValidatedTextInput)
+      console.log(wrapper.html())
+      const input = wrapper.find('[data-selector="slot"]')
       expect(input.vm.validateOnInput).toBe(validateOnInput)
     })
 
     it('forwards validateOnBlur property to input', () => {
       const validateOnBlur = 'aedfada'
       const wrapper = createShallowWrapper({validateOnBlur})
-      const input = wrapper.find(AeValidatedTextInput)
+      const input = wrapper.find('[data-slot-component]')
       expect(input.vm.validateOnBlur).toBe(validateOnBlur)
     })
   })

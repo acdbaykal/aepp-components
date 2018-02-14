@@ -1,9 +1,11 @@
 import AeValidatedTextInput from '../aeInputValidation/aeInputValidation.vue'
+import AeLabel from '../aeLabel/aeLabel.vue'
 
 export default {
   name: 'ae-labelled-text-input',
   components: {
-    AeValidatedTextInput
+    AeValidatedTextInput,
+    AeLabel
   },
   data () {
     return {
@@ -85,5 +87,31 @@ export default {
     value (val) {
       this.internalValue = val
     }
-  }
+  },
+    render (h) {
+      const defaultSlot = this.$slots.default || []
+      const firstNode = defaultSlot[0]
+      const rest = defaultSlot.filter((elem, index) => index !== 0)
+      const childNodes = (() => {
+        const result = [h(AeLabel, {}, [ this.label ])]
+        if (firstNode) {
+          // firstNode.$on('validate', this.onValidate)
+          const oldData = firstNode.data || {}
+          const oldProps = oldData.props || {}
+          firstNode.data = {
+            ...oldData,
+            props: {
+              ...oldProps,
+              validateOnInput: this.validateOnInput
+            }
+          }
+          result.push(firstNode)
+        }
+        if (rest.length > 0) {
+          Array.prototype.push.apply(result, rest)
+        }
+        return result
+      })()
+      return h('div', {}, childNodes)
+    }
 }

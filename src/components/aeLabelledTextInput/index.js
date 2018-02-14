@@ -1,5 +1,5 @@
-import AeTextInputMolecule from './aeLabelledTextInput.vue'
+import AeLabelledInput from './aeLabelledTextInput.vue'
 
 export default function install (Vue) {
-  Vue.component('ae-text-input-module', AeTextInputMolecule)
+  Vue.component('ae-labelled-text-input', AeLabelledInput)
 }
