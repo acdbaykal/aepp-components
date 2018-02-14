@@ -10,7 +10,8 @@ export default {
   data () {
     return {
       errorId: undefined,
-      internalValue: this.value
+      internalValue: this.value,
+      validationHandler: undefined
     }
   },
   props: {
@@ -44,7 +45,10 @@ export default {
     }
   },
   computed: {
-    _errorMessage () {
+    labelVM () {
+      return this.$children[0]
+    },
+    errorMessage () {
       if (!this.errorId) {
         return
       }
@@ -52,66 +56,26 @@ export default {
       const message = this.errorMessages[this.errorId] || this.defaultErrorMessage
       return message
     },
-    _validMessage () {
-      if (!this.errorId) {
-        return this.validMessage
-      }
+    message(){
+      return this._errorMessage() || this.validMessage()
     },
-    internalInputId () {
-      return this._uid
+    labelMessageType () {
+      if (!this.errorId) {
+        return
+      }
+
+      return 'danger';
     }
   },
   methods: {
     onValidate (value) {
       this.errorId = value
-      this.$emit('validation', value)
-    },
-    onBlur (value) {
-      this.$emit('blur', value)
-    },
-    onFocus () {
-      this.$emit('focus')
-    },
-    onInput (value) {
-      this.$emit('input', value)
-    },
-    clearInput () {
-      this.internalValue = ''
-      this.$emit('input', '')
-    },
-    forwardKeyEvent (event) {
-      this.$emit(event.type, event)
     }
   },
-  watch: {
-    value (val) {
-      this.internalValue = val
-    }
-  },
-    render (h) {
-      const defaultSlot = this.$slots.default || []
-      const firstNode = defaultSlot[0]
-      const rest = defaultSlot.filter((elem, index) => index !== 0)
-      const childNodes = (() => {
-        const result = [h(AeLabel, {}, [ this.label ])]
-        if (firstNode) {
-          // firstNode.$on('validate', this.onValidate)
-          const oldData = firstNode.data || {}
-          const oldProps = oldData.props || {}
-          firstNode.data = {
-            ...oldData,
-            props: {
-              ...oldProps,
-              validateOnInput: this.validateOnInput
-            }
-          }
-          result.push(firstNode)
-        }
-        if (rest.length > 0) {
-          Array.prototype.push.apply(result, rest)
-        }
-        return result
-      })()
-      return h('div', {}, childNodes)
-    }
+  mounted () {
+    const firstSlotNode = this.$slots.default[0]
+    const childVM = firstSlotNode.componentInstance
+    const validationHandler = this.onValidate.bind(this)
+    childVM.$on('validation', validationHandler)
+  }
 }

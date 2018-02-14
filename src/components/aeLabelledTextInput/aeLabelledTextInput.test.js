@@ -2,35 +2,16 @@ import {shallow, mount, createLocalVue} from 'vue-test-utils'
 import AeLabelledTextInput from './aeLabelledTextInput.vue'
 import AeLabelledTextInputPlugin from './index'
 import AeLabel from '../aeLabel/aeLabel.vue'
+import ValidationComponent from '../aeInputValidation/aeInputValidation.vue'
 
 describe('AeLabelledTextInput', () => {
-  const localVue = createLocalVue()
-  const SlotInner = localVue.component('slot-inner')
-  localVue.component('slot-component', {
-    name: 'slot-component',
-    functional: true,
-    render (h, context) {
-      console.log(context)
-      return h(
-        'div', {
-          attrs: {
-            'data-selector': !!this.validateOnInput
-          },
-          props: {
-            validateOnInput: undefined
-          }
-        }
-      )
-    }
-  })
 
   const createShallowWrapper = (data = {}) => {
     return shallow(AeLabelledTextInput, {
       propsData: data,
       slots: {
-        default: '<slot-component></slot-component>'
-      },
-      localVue
+        default: ValidationComponent
+      }
     })
   }
 
@@ -54,8 +35,8 @@ describe('AeLabelledTextInput', () => {
 
     it('renders what ever has been inserted as the default slot', () => {
       const wrapper = createShallowWrapper()
-      const slotComponent = wrapper.find('[data-slot-component]')
-      expect(slotComponent.is('div')).toBe(true)
+      const slotComponent = wrapper.find(ValidationComponent)
+      expect(slotComponent.is(ValidationComponent)).toBe(true)
     })
 
     // it('forwards placeholder prop onto ae-input-validation element', () => {
@@ -83,98 +64,66 @@ describe('AeLabelledTextInput', () => {
     //   const id = input.vm.$props.inputId
     //   expect(forValue).toBe(id + '')
     // })
-
-    it.only('forwards validateOnInput property to first default slot element', () => {
-      const validateOnInput = () => undefined
-      const wrapper = createShallowWrapper({validateOnInput})
-      console.log(wrapper.html())
-      const input = wrapper.find('[data-selector="slot"]')
-      expect(input.vm.validateOnInput).toBe(validateOnInput)
-    })
-
-    it('forwards validateOnBlur property to input', () => {
-      const validateOnBlur = 'aedfada'
-      const wrapper = createShallowWrapper({validateOnBlur})
-      const input = wrapper.find('[data-slot-component]')
-      expect(input.vm.validateOnBlur).toBe(validateOnBlur)
-    })
   })
 
   describe('event handling', () => {
-    it('renders error message when input emits validate event with payload ' +
-      'and payload is a defined key of error messages', (done) => {
+    it('renders error message when first slot element emits validate event with payload ' +
+      'and payload is a defined key of error messages', () => {
       const message = 'lkjjl;kjl;k'
       const errorMessages = {
         'err': message
       }
       const wrapper = createShallowWrapper({errorMessages})
-      const input = wrapper.find(AeValidatedTextInput)
-      input.vm.$emit('validation', 'err')
-      wrapper.vm.$nextTick(
+      const validation = wrapper.find(ValidationComponent)
+      validation.vm.$emit('validation', 'err')
+      return wrapper.vm.$nextTick().then(
         () => {
-          const errorMessage = wrapper.vm.$refs.errorMessage
-          expect(errorMessage).toBeTruthy()
-          expect(errorMessage.innerHTML.trim()).toEqual(message)
-          done()
+          const label = wrapper.find(AeLabel)
+          expect(label.vm.$props.helpText).toBe(message)
+          expect(label.vm.$props.helpType).toBe('danger')
         }
       )
     })
 
     it('renders default error message when input emits validate event with payload ' +
-      'and payload is NOT a defined key of error messages', (done) => {
+      'and payload is NOT a defined key of error messages', () => {
       const defaultErrorMessage = 'lkdfjlkjdl'
       const wrapper = createShallowWrapper({defaultErrorMessage})
-      const input = wrapper.find(AeValidatedTextInput)
+      const input = wrapper.find(ValidationComponent)
       input.vm.$emit('validation', 'err')
-      wrapper.vm.$nextTick(
+      return wrapper.vm.$nextTick().then(
         () => {
-          const errorMessage = wrapper.vm.$refs.errorMessage
-          expect(errorMessage).toBeTruthy()
-          expect(errorMessage.innerHTML.trim()).toEqual(defaultErrorMessage)
-          done()
+          const label = wrapper.find(AeLabel)
+          expect(label.vm.$props.helpText).toBe(defaultErrorMessage)
+          expect(label.vm.$props.helpType).toBe('danger')
         }
       )
     })
 
-    it('does NOT render any error message when input is in a valid state', (done) => {
+    it('does NOT render any error message when input is in a valid state', () => {
       const defaultErrorMessage = 'lkdfjlkjdl'
       const wrapper = createShallowWrapper({defaultErrorMessage})
-      const input = wrapper.find(AeValidatedTextInput)
+      const input = wrapper.find(ValidationComponent)
       input.vm.$emit('validation', undefined)
-      wrapper.vm.$nextTick(
+      return wrapper.vm.$nextTick().then(
         () => {
-          const errorMessage = wrapper.vm.$refs.errorMessage
-          expect(errorMessage).toBeUndefined()
-          done()
+          const label = wrapper.find(AeLabel)
+          expect(label.vm.$props.helpText).toBeUndefined()
+          expect(label.vm.$props.helpType).toBeUndefined()
         }
       )
     })
 
-    it('renders valid message if one was provided through props and no validation error is present', (done) => {
+    it.only('renders valid message if one was provided through props and no validation error is present', () => {
       const validMessage = 'lkdfjlkjdl'
       const wrapper = createShallowWrapper({validMessage})
-      const input = wrapper.find(AeValidatedTextInput)
+      const input = wrapper.find(ValidationComponent)
       input.vm.$emit('validation', undefined)
-      wrapper.vm.$nextTick(
+      return wrapper.vm.$nextTick().then(
         () => {
-          const validMessageElement = wrapper.vm.$refs.validMessage
-          expect(validMessageElement).toBeTruthy()
-          expect(validMessageElement.innerHTML.trim()).toEqual(validMessage)
-          done()
-        }
-      )
-    })
-
-    it('does NOT render valid message when an validation error is present', (done) => {
-      const validMessage = 'lkdfjlkjdl'
-      const wrapper = createShallowWrapper({validMessage})
-      const input = wrapper.find(AeValidatedTextInput)
-      input.vm.$emit('validation', 'some error')
-      wrapper.vm.$nextTick(
-        () => {
-          const validMessageElement = wrapper.vm.$refs.validMessage
-          expect(validMessageElement).toBeUndefined()
-          done()
+          const label = wrapper.find(AeLabel)
+          expect(label.vm.$props.helpText).toBe(validMessage)
+          expect(label.vm.$props.helpType).toBeUndefined()
         }
       )
     })
