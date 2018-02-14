@@ -1,11 +1,10 @@
-import {shallow, mount, createLocalVue} from 'vue-test-utils'
+import {shallow} from 'vue-test-utils'
 import AeLabelledTextInput from './aeLabelledTextInput.vue'
 import AeLabelledTextInputPlugin from './index'
 import AeLabel from '../aeLabel/aeLabel.vue'
 import ValidationComponent from '../aeInputValidation/aeInputValidation.vue'
 
 describe('AeLabelledTextInput', () => {
-
   const createShallowWrapper = (data = {}) => {
     return shallow(AeLabelledTextInput, {
       propsData: data,
@@ -15,11 +14,6 @@ describe('AeLabelledTextInput', () => {
     })
   }
 
-  const createWrapper = (data = {}) => {
-    return mount(AeLabelledTextInput, {
-      propsData: data
-    })
-  }
   it('has an install function', () => {
     expect(AeLabelledTextInputPlugin).toBeInstanceOf(Function)
   })
@@ -114,7 +108,7 @@ describe('AeLabelledTextInput', () => {
       )
     })
 
-    it.only('renders valid message if one was provided through props and no validation error is present', () => {
+    it('renders valid message if one was provided through props and no validation error is present', () => {
       const validMessage = 'lkdfjlkjdl'
       const wrapper = createShallowWrapper({validMessage})
       const input = wrapper.find(ValidationComponent)
@@ -128,118 +122,17 @@ describe('AeLabelledTextInput', () => {
       )
     })
 
-    it('does NOT render valid message when input is in valid state but a validMessage prop was not provided', (done) => {
+    it('does NOT render valid message when input is in valid state but a validMessage prop was not provided', () => {
       const wrapper = createShallowWrapper()
-      const input = wrapper.find(AeValidatedTextInput)
+      const input = wrapper.find(ValidationComponent)
       input.vm.$emit('validation', undefined)
-      wrapper.vm.$nextTick(
+      return wrapper.vm.$nextTick().then(
         () => {
-          const validMessageElement = wrapper.vm.$refs.validMessage
-          expect(validMessageElement).toBeUndefined()
-          done()
+          const label = wrapper.find(AeLabel)
+          expect(label.vm.$props.helpText).toBeUndefined()
+          expect(label.vm.$props.helpType).toBeUndefined()
         }
       )
-    })
-
-    it('passes input event', () => {
-      const value = 'afca'
-      const wrapper = createShallowWrapper()
-      const input = wrapper.find(AeValidatedTextInput)
-      input.vm.$emit('input', value)
-      const received = wrapper.emitted('input')
-      expect(received).toBeTruthy()
-      expect(received[0]).toEqual([value])
-    })
-
-    it('passes on validate event', () => {
-      const wrapper = createShallowWrapper()
-      const input = wrapper.find(AeValidatedTextInput)
-      input.vm.$emit('validation', 'errId')
-      const received = wrapper.emitted('validation')
-      expect(received).toBeTruthy()
-      expect(received.length).toBe(1)
-      expect(received[0]).toEqual(['errId'])
-    })
-
-    it('passes on focus event', () => {
-      const wrapper = createShallowWrapper()
-      const input = wrapper.find(AeValidatedTextInput)
-      input.vm.$emit('focus', 'val')
-      const received = wrapper.emitted('focus')
-      expect(received).toBeTruthy()
-      expect(received.length).toBe(1)
-    })
-
-    it('passes on blur event', () => {
-      const wrapper = createShallowWrapper()
-      const input = wrapper.find(AeValidatedTextInput)
-      input.vm.$emit('blur', 'val')
-      const received = wrapper.emitted('blur')
-      expect(received).toBeTruthy()
-      expect(received.length).toBe(1)
-      expect(received[0]).toEqual(['val'])
-    })
-    const testKeyEventForward = eventName => {
-      const eventData = {
-        keyCode: 13,
-        key: 'Enter'
-      }
-
-      const wrapper = createWrapper()
-      const input = wrapper.find('input')
-      input.trigger(eventName, eventData)
-      const receivedEvent = wrapper.emitted(eventName)
-      expect(receivedEvent).toBeTruthy()
-      expect(receivedEvent.length).toBe(1)
-      // expect(receivedEvent[0][0]).toEqual(eventData)
-    }
-
-    it('emits keydown when the input does', () => {
-      testKeyEventForward('keydown')
-    })
-
-    it('emits keyup when input does', () => {
-      testKeyEventForward('keyup')
-    })
-
-    it('emits keypress when input does', () => {
-      testKeyEventForward('keypress')
-    })
-
-    it('clears input when clearRequest is emitted', (done) => {
-      const value = 'not empty'
-      const wrapper = createShallowWrapper({value})
-      const input = wrapper.find(AeValidatedTextInput)
-      expect(input.vm.$props.value).toBe(value)
-      input.vm.$emit('clearRequest')
-      input.vm.$nextTick(() => {
-        expect(input.vm.$props.value).toBe('')
-        done()
-      })
-    })
-
-    it('emit input event with empty value when clearRequest is recieved', () => {
-      const wrapper = createShallowWrapper()
-      const input = wrapper.find(AeValidatedTextInput)
-      input.vm.$emit('clearRequest')
-      const receivedEvent = wrapper.emitted('input')
-      expect(receivedEvent).toBeTruthy()
-      expect(receivedEvent.length).toBe(1)
-      expect(receivedEvent[0][0]).toBe('')
-    })
-
-    it('reacts to value property change', (done) => {
-      const value = 'not empty'
-      const wrapper = createShallowWrapper()
-      const input = wrapper.find(AeValidatedTextInput)
-      expect(input.vm.$props.value).toBe('')
-      input.setProps({
-        value
-      })
-      input.vm.$nextTick(() => {
-        expect(input.vm.$props.value).toBe(value)
-        done()
-      })
     })
   })
 })

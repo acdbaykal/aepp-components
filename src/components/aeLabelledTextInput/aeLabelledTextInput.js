@@ -56,15 +56,15 @@ export default {
       const message = this.errorMessages[this.errorId] || this.defaultErrorMessage
       return message
     },
-    message(){
-      return this._errorMessage() || this.validMessage()
+    message () {
+      return this.errorMessage || this.validMessage
     },
     labelMessageType () {
       if (!this.errorId) {
         return
       }
 
-      return 'danger';
+      return 'danger'
     }
   },
   methods: {
